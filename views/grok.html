@@ -1,0 +1,1135 @@
+admin.js
+const express = require("express");
+const User = require("../models/User");
+const Item = require("../models/Item");
+const Feedback = require("../models/Feedback");
+const mongoose = require("mongoose");
+const generateItemCSV = require("../utils/csv");
+
+const router = express.Router();
+
+/* =========================
+   ADMIN AUTH MIDDLEWARE
+========================= */
+function adminProtect(req, res, next) {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).send("<h1>403 Forbidden: Admin Access Required</h1>");
+  }
+  next();
+}
+
+/* =========================
+   ADMIN DASHBOARD
+========================= */
+router.get("/admin", adminProtect, async (req, res) => {
+  try {
+    const users = await User.find();
+    const items = await Item.find().populate("ownerId", "username");
+    const feedbacks = await Feedback.find().populate("userId", "username");
+
+    res.render("admin", {
+      user: req.session.user, // 🔥 VERY IMPORTANT
+      users,
+      items,
+      feedbacks
+    });
+  } catch (err) {
+    console.error("Admin dashboard error:", err);
+    res.status(500).send("Error loading admin dashboard");
+  }
+});
+
+/* =========================
+   DOWNLOAD USERS CSV
+========================= */
+router.get("/download/users", adminProtect, async (req, res) => {
+  try {
+    const users = await User.find(
+      {},
+      "username email role createdAt"
+    ).sort({ createdAt: -1 });
+
+    let csv = "Username,Email,Role,Created At\n";
+
+    users.forEach(u => {
+      csv += `"${u.username}","${u.email}","${u.role}","${u.createdAt.toISOString()}"\n`;
+    });
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=users_report.csv"
+    );
+
+    return res.send(csv);
+  } catch (err) {
+    console.error("User CSV error:", err);
+    res.status(500).send("CSV generation failed");
+  }
+});
+
+/* =========================
+   DOWNLOAD ITEMS CSV
+========================= */
+router.get("/download-csv", adminProtect, async (req, res) => {
+  try {
+    const items = await Item.find().populate("ownerId", "username");
+    const csv = generateItemCSV(items);
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="Item_Report_${Date.now()}.csv"`
+    );
+
+    return res.send(csv); // ❌ redirect removed (IMPORTANT)
+  } catch (err) {
+    console.error("Item CSV error:", err);
+    res.status(500).send("Error generating item CSV");
+  }
+});
+
+/* =========================
+   DELETE ITEM
+========================= */
+router.post("/admin/delete/item/:id", adminProtect, async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).send("Invalid item ID");
+  }
+
+  try {
+    const item = await Item.findByIdAndDelete(id);
+    if (!item) return res.status(404).send("Item not found");
+
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Delete item error:", err);
+    res.status(500).send("Error deleting item");
+  }
+});
+
+/* =========================
+   DELETE USER
+========================= */
+router.post("/admin/delete/user/:id", adminProtect, async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).send("Invalid user ID");
+  }
+
+  try {
+    // ❌ prevent admin deleting himself
+    if (id === req.session.user._id.toString()) {
+      return res.status(400).send("You cannot delete your own account");
+    }
+
+    await Item.deleteMany({ ownerId: id });
+    await User.findByIdAndDelete(id);
+
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Delete user error:", err);
+    res.status(500).send("Error deleting user");
+  }
+});
+
+/* =========================
+   DELETE FEEDBACK
+========================= */
+router.post("/admin/delete/feedback/:id", adminProtect, async (req, res) => {
+  try {
+    await Feedback.findByIdAndDelete(req.params.id);
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Delete feedback error:", err);
+    res.status(500).send("Error deleting feedback");
+  }
+});
+
+module.exports = router;
+
+admin.ejs
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* Basic styling for better readability (from Homemade) */
+    body.admin-page { font-family: sans-serif; margin: 20px; }
+    h1, h2, h3 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .btn {
+      display: inline-block;
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9em;
+    }
+    .btn:hover { background-color: #45a049; }
+    .download-form { display: inline-block; margin-left: 10px; }
+    .user-actions, .item-actions { display: flex; gap: 10px; align-items: center;}
+    .delete-btn { background-color: #f44336; color: white; }
+    .delete-btn:hover { background-color: #da190b; }
+    .view-btn { background-color: #008CBA; color: white;}
+    .view-btn:hover { background-color: #007ba7;}
+    .report-header th { background-color: #e0e0e0; }
+  </style>
+</head>
+<body class="admin-page">
+
+  <h1>Admin Dashboard</h1>
+  
+  <% if (user.role=="admin") { %>
+    <p>Welcome, Admin <%= user.username %>!</p>
+  <% } %>
+
+  <!-- Registered Users Section (Enhanced from Homemade) -->
+  <h2>Registered Users</h2>
+  <div class="user-actions">
+    <form action="/download/users" method="GET">
+      <button type="submit" class="btn">Download User Report (CSV)</button>
+    </form>
+  </div>
+  <table>
+    <thead>
+      <tr class="report-header">
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(user => { %>
+        <tr>
+          <td><%= user.username %></td>
+          <td><%= user.email %></td>
+          <td><%= user.role %></td>
+          <td><%= user.createdAt.toLocaleString() %></td>
+          <td>
+            <form action="/admin/delete/user/<%= user._id %>" method="POST" style="display:inline;" onsubmit="return confirmDelete('user')">
+              <button class="btn delete-btn">Delete User</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <!-- Lost & Found Items Section (Enhanced from Homemade) -->
+  <h2>Lost & Found Items</h2>
+  <table>
+    <thead>
+      <tr class="report-header">
+        <th>Title</th>
+        <th>Description</th>
+        <th>Type</th>
+        <th>Owner</th>
+        <th>Status</th>
+        <th>Contact Visible</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% items.forEach(item => { %>
+        <tr>
+          <td><%= item.title %></td>
+          <td><%= item.description %></td>
+          <td><%= item.type %></td>
+          <td><%= (item.ownerId && item.ownerId.username) ? item.ownerId.username : 'Unknown' %></td>
+          <td><%= item.status %></td>
+          <td><%= item.isContactVisible ? 'Yes' : 'No' %></td>
+          <td><%= item.createdAt.toLocaleString() %></td>
+          <td>
+            <form action="/admin/delete/item/<%= item._id %>" method="POST" style="display:inline;" onsubmit="return confirmDelete('item')">
+              <button class="btn delete-btn">Delete Item</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <!-- Feedback Messages (from GitHub) -->
+  <h2>User Feedback</h2>
+  <table>
+    <thead>
+      <tr class="report-header">
+        <th>User</th>
+        <th>Message</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% feedbacks.forEach(fb => { %>
+        <tr>
+          <td><%= fb.userId ? fb.userId.username : "Unknown" %></td>
+          <td><%= fb.message %></td>
+          <td><%= fb.date.toLocaleString() %></td>
+          <td>
+            <form action="/admin/delete/feedback/<%= fb._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this feedback?')">
+              <button class="btn delete-btn">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <!-- Download Item Report (from GitHub) -->
+  <a href="/admin/download-csv" class="btn" onclick="return confirm('Download CSV?')">
+    Download Item Report (CSV)
+  </a>
+
+  <script>
+    function confirmDelete(type) {
+      return confirm(`Are you sure you want to delete this ${type}?`);
+    }
+  </script>
+
+</body>
+</html>
+
+
+auth.js
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
+const router = express.Router();
+
+// Render login page
+router.get("/login", (req, res) => {
+    if (req.session.user) return res.redirect("/dashboard");
+    res.render("login");
+});
+
+// Render register page
+router.get("/register", (req, res) => {
+    if (req.session.user) return res.redirect("/dashboard");
+    res.render("register");
+});
+// Register
+router.post("/register", async (req, res) => {
+    const { username, email, password } = req.body;
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({ username, email, password: hashedPassword });
+        await user.save();
+        // req.session.user = user;
+        // res.redirect("/dashboard"); // after successful register
+        res.render("login",{successMessage: "Registration Successful! Please Login. "});
+    } catch (err) {
+        console.error(err);
+        // res.send("Error during registration ");
+            res.render("register",{errorMessage: "Error during registration."});
+    }
+});
+
+// Login
+// Login
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.render("login", { errorMessage: "No user found with this email" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.render("login", { errorMessage: "Invalid password" });
+    }
+
+    // Store plain object – avoids Mongoose doc issues
+    req.session.user = {
+      _id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+      role: user.role || "user"
+    };
+
+    console.log("Session set for:", req.session.user.username, "role:", req.session.user.role);
+
+    if (req.session.user.role === "admin") {
+      return res.redirect("/admin");
+    }
+    res.redirect("/dashboard");
+  } catch (err) {
+    console.error("Login error:", err);
+    res.render("login", { errorMessage: "Server error during login" });
+  }
+});
+
+// Logout
+router.get("/logout", (req, res) => {
+    req.session.destroy();
+    res.redirect("/");
+});
+
+router.get("/", (req, res) => {
+    res.render("index");
+}
+);
+module.exports = router;
+
+
+User.js
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+    username: String,
+    email: String,
+    password: String,
+    role: { type: String, default: "user" ,
+          enum: ["user", "admin"]} // "user" or "admin"
+});
+
+module.exports = mongoose.model("User", userSchema);
+Item.js
+
+const mongoose = require("mongoose");
+
+const itemSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  type: { type: String, enum: ["lost", "found"], required: true },
+  
+  // --- Fields that will be HIDDEN by default ---
+  contact: { 
+    type: String, 
+    // contact is now conditionally visible, not strictly required upfront for all types
+    // We'll manage its visibility via isContactVisible and claim status.
+  },
+  
+  // --- NEW FIELDS FOR SECURITY & VERIFICATION ---
+  
+  // For 'lost' items: the owner provides a secret detail.
+  // For 'found' items: the finder provides a secret detail.
+  // This detail is used by the other party to prove ownership.
+  secretVerificationDetail: { 
+    type: String, 
+    required: true 
+  },
+
+  // The ID of the user who originally posted the item (owner)
+  ownerId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "User", 
+    required: true 
+  },
+  
+  // Status of the item: 'available', 'pending_claim', 'claimed', 'recovered', 'unclaimed', 'removed_by_admin'
+  status: { 
+    type: String, 
+    default: 'available', // Initially available for claims/recovery
+    enum: ['available', 'pending_claim', 'claimed', 'recovered', 'unclaimed', 'removed_by_admin'] 
+  },
+  
+  // Whether the contact information is visible to the public.
+  // This will be set to 'true' only after a claim is verified and approved.
+  isContactVisible: { 
+    type: Boolean, 
+    default: false 
+  },
+  
+  // Array to store all claim requests for this item.
+  claims: [{
+    requesterId: { // The user who is claiming the item (either owner or finder)
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "User", 
+      required: true 
+    },
+    proofDescription: { // The proof of ownership submitted by the requester
+      type: String, 
+      required: true 
+    },
+    // Status of the claim: 'pending', 'rejected', 'accepted'
+    status: { 
+      type: String, 
+      default: 'pending', 
+      enum: ['pending', 'rejected', 'accepted'],
+      required: true
+    },
+    claimedAt: { type: Date, default: Date.now } // When the claim was submitted
+  }],
+  
+  image: String,
+  location: { 
+    type: String, 
+    required: true, // Location must be provided
+    trim: true 
+  },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now } // Good practice to track updates**
+});
+
+// Middleware to update 'updatedAt' field before saving
+itemSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+module.exports = mongoose.model("Item", itemSchema);
+
+
+login .ejs
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Lost & Found</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container auth-container">
+    <h2>Login</h2>
+
+    <% if (typeof errorMessage !== 'undefined') { %>
+    <p class="error-msg" style="color: red; font-weight: bold;"><%= errorMessage %></p>
+    <% } %>
+    <% if (typeof successMessage !== 'undefined') { %>
+    <p class="success-msg" style="color: green; font-weight: bold;"><%= successMessage %></p>
+    <% } %>
+
+    <form method="POST" action="/login">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <p class="auth-footer">
+      Don’t have an account? <a href="/register">Register</a>
+    </p>
+  </div>
+</body>
+</html>
+
+server.js 
+const express = require("express");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const path = require("path");
+
+const app = express();
+
+// ===== View Engine & Static Files =====
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ===== IMPORTANT: Session FIRST (only ONE instance) =====
+app.use(
+  session({
+    secret: "lostfoundsecret-2026-change-this-to-long-random-string",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 3, // 3 days
+      httpOnly: true,
+      secure: false,                   // ← change to true only when using HTTPS
+      sameSite: "lax"
+    }
+  })
+);
+// ===== Body Parser =====
+app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(express.json());  // if you ever need JSON bodies
+
+// ===== Global flash messages =====
+app.use((req, res, next) => {
+  res.locals.successMessage = req.query.success || null;
+  res.locals.errorMessage   = req.query.error   || null;
+  next();
+});
+
+// ===== MongoDB =====
+mongoose
+  .connect("mongodb://127.0.0.1:27017/locatex")
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ DB Error:", err));
+
+// ===== Routes =====
+const adminRoutes = require("./routes/admin");
+const authRoutes  = require("./routes/auth");
+const itemRoutes  = require("./routes/items");
+const pagesRoutes = require("./routes/pages");
+
+app.use("/", authRoutes);
+app.use("/", itemRoutes);
+app.use("/", pagesRoutes);
+app.use("/", adminRoutes);      // admin last – its paths are more specific
+
+// ===== Homepage =====
+app.get("/", (req, res) => {
+  res.render("index");
+});
+
+// ===== Start =====
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
+
+items.js 
+const express = require("express");
+const Item = require("../models/Item");
+const multer = require("multer");
+const path = require("path");
+const mongoose = require("mongoose");
+
+const router = express.Router();
+
+/* ===========================
+   MULTER CONFIG
+=========================== */
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "../uploads"));
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowed = /jpeg|jpg|png|gif/;
+  const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+  const mime = allowed.test(file.mimetype);
+  if (ext && mime) cb(null, true);
+  else cb(new Error("Images only"));
+};
+
+const upload = multer({ storage, fileFilter });
+
+/* ===========================
+   DASHBOARD
+=========================== */
+router.get("/dashboard", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  try {
+    const items = await Item.find().populate("ownerId", "username");
+
+    res.render("dashboard", {
+      user: req.session.user,
+      items,
+      searchQuery: req.query.q || "",
+      message: req.query.message,
+      error: req.query.err
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Dashboard error");
+  }
+});
+
+/* ===========================
+   ADD ITEM
+=========================== */
+router.post("/add", upload.single("image"), async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  try {
+    const {
+      title,
+      description,
+      type,
+      contact,
+      location,
+      secretVerificationDetail
+    } = req.body;
+
+    if (!title || !type || !contact || !location || !secretVerificationDetail) {
+      return res.status(400).send("Missing fields");
+    }
+
+    const item = new Item({
+      title,
+      description,
+      type,
+      contact,
+      location,
+      secretVerificationDetail,
+      ownerId: req.session.user._id,
+      image: req.file ? req.file.filename : null,
+      status: "available",
+      isContactVisible: false
+    });
+
+    await item.save();
+    res.redirect("/dashboard?message=Item added successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Add item failed");
+  }
+});
+
+/* ===========================
+   FILTER ROUTES
+=========================== */
+router.get("/items/all", async (req, res) => {
+  const items = await Item.find().populate("ownerId", "username");
+  res.render("dashboard", { user: req.session.user, items, searchQuery: "" });
+});
+
+router.get("/items/lost", async (req, res) => {
+  const items = await Item.find({ type: "lost" }).populate("ownerId", "username");
+  res.render("dashboard", { user: req.session.user, items, searchQuery: "" });
+});
+
+router.get("/items/found", async (req, res) => {
+  const items = await Item.find({ type: "found" }).populate("ownerId", "username");
+  res.render("dashboard", { user: req.session.user, items, searchQuery: "" });
+});
+
+router.get("/items/my", async (req, res) => {
+  const items = await Item.find({ ownerId: req.session.user._id }).populate("ownerId", "username");
+  res.render("dashboard", { user: req.session.user, items, searchQuery: "" });
+});
+
+/* ===========================
+   SEARCH
+=========================== */
+router.get("/search", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  const q = req.query.q;
+  if (!q) return res.redirect("/dashboard");
+
+  const items = await Item.find({
+    $or: [
+      { title: { $regex: q, $options: "i" } },
+      { description: { $regex: q, $options: "i" } },
+      { location: { $regex: q, $options: "i" } }
+    ]
+  }).populate("ownerId", "username");
+
+  res.render("dashboard", {
+    user: req.session.user,
+    items,
+    searchQuery: q
+  });
+});
+
+/* ===========================
+   CLAIM ITEM
+=========================== */
+router.post("/items/:itemId/claim", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  const { itemId } = req.params;
+  const { proofDescription } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(itemId)) {
+    return res.status(400).send("Invalid item ID");
+  }
+
+  try {
+    const item = await Item.findById(itemId);
+    if (!item) return res.status(404).send("Item not found");
+
+    if (item.ownerId.toString() === req.session.user._id.toString()) {
+      return res.status(400).send("Cannot claim your own item");
+    }
+
+    const alreadyClaimed = item.claims.some(
+      c => c.requesterId.toString() === req.session.user._id.toString()
+    );
+
+    if (alreadyClaimed) {
+      return res.status(400).send("Already claimed");
+    }
+
+    item.claims.push({
+      requesterId: req.session.user._id,
+      proofDescription,
+      status: "pending"
+    });
+
+    item.status = "pending_claim";
+    await item.save();
+
+    res.redirect("/dashboard?message=Claim submitted");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Claim error");
+  }
+});
+
+/* ===========================
+   VERIFY CLAIM (POST — FIXED)
+=========================== */
+router.post("/items/:itemId/claims/:claimId/verify", async (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+
+  const { itemId, claimId } = req.params;
+  const { action } = req.body;
+
+  try {
+    const item = await Item.findById(itemId);
+    if (!item) return res.status(404).send("Item not found");
+
+    if (item.ownerId.toString() !== req.session.user._id.toString()) {
+      return res.status(403).send("Not authorized");
+    }
+
+    const claim = item.claims.id(claimId);
+    if (!claim) return res.status(404).send("Claim not found");
+
+    if (action === "accept") {
+      claim.status = "accepted";
+      item.status = "claimed";
+      item.isContactVisible = true;
+
+      item.claims.forEach(c => {
+        if (c._id.toString() !== claimId && c.status === "pending") {
+          c.status = "rejected";
+        }
+      });
+    }
+
+    if (action === "reject") {
+      claim.status = "rejected";
+      const pending = item.claims.some(c => c.status === "pending");
+      if (!pending) {
+        item.status = "available";
+        item.isContactVisible = false;
+      }
+    }
+
+    await item.save();
+    res.redirect("/dashboard?message=Claim updated");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Verification failed");
+  }
+});
+
+/* ===========================
+   RESOLVE ITEM
+=========================== */
+router.post("/items/resolve/:id", async (req, res) => {
+  const item = await Item.findById(req.params.id);
+  if (!item) return res.status(404).send("Item not found");
+
+  if (item.ownerId.toString() !== req.session.user._id.toString()) {
+    return res.status(403).send("Not allowed");
+  }
+
+  item.status = "Resolved";
+  await item.save();
+
+  res.redirect("/dashboard?message=Item resolved");
+});
+
+/* ===========================
+   DELETE ITEM
+=========================== */
+router.post("/items/delete/:id", async (req, res) => {
+  const item = await Item.findById(req.params.id);
+  if (!item) return res.status(404).send("Item not found");
+
+  if (item.ownerId.toString() !== req.session.user._id.toString()) {
+    return res.status(403).send("Not allowed");
+  }
+
+  await Item.findByIdAndDelete(req.params.id);
+  res.redirect("/dashboard");
+});
+
+module.exports = router;
+
+
+pages.js 
+
+const express = require("express");
+const router = express.Router();
+const Contact = require("../models/Contact");
+const Item = require("../models/Item");
+const Feedback = require("../models/Feedback");
+const User = require("../models/User");
+const nodemailer = require("nodemailer");
+
+
+
+function protect(req, res, next) {
+  if (!req.session.user) return res.redirect("/login");
+  next();
+}
+
+router.get("/profile", protect, (req, res) => {
+  res.render("profile", { user: req.session.user });
+});
+
+router.get("/contact", protect, (req, res) => {
+  res.render("contact");
+});
+
+// router.post("/contact", protect, (req, res) => {
+//   console.log("Message from user:", req.body);
+//   res.send("Message sent ✔️");
+// });
+
+router.get("/about", protect, (req, res) => {
+  res.render("about");
+});
+
+// router.get("/status", protect, (req, res) => {
+//   res.render("status", { item: null });
+// });
+
+router.get("/feedback", protect, (req, res) => {
+  res.render("feedback");
+});
+
+// router.post("/feedback", protect, (req, res) => {
+//   console.log("User feedback:", req.body);
+//   res.send("Thanks for your feedback ✔️");
+// });
+
+
+router.get("/profile/edit", protect, (req, res) => {
+  res.render("editProfile", { user: req.session.user });
+});
+
+router.post("/profile/edit", protect, async (req, res) => {
+  const { username, email } = req.body;
+
+  await User.findByIdAndUpdate(req.session.user._id, { 
+    username, 
+    email 
+  });
+
+  req.session.user.username = username;
+  req.session.user.email = email;
+
+  res.redirect("/profile");
+});
+
+
+
+router.post("/contact", protect, async (req, res) => {
+  const { name, email, message } = req.body;
+
+  try {
+    await transporter.sendMail({
+      from: email,
+      to: "techwithpralhad@gmail.com",
+      subject: "New Contact Message From Lost & Found System",
+      html: `
+        <h3>New message from: ${name}</h3>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Message:</b><br>${message}</p>
+      `
+    });
+
+    // res.send("Your message has been sent to admin successfully ✔️");
+    res.redirect("/contact?success=Your message has been sent to admin successfully."); 
+
+  } catch (error) {
+    console.error(error);
+    // res.send("Error sending message ❌");
+    res.redirect("/contact?error=Error sending message.");
+  }
+});
+
+
+
+router.get("/status", protect, async (req, res) => {
+  const code = req.query.code;
+
+  if (!code) return res.render("status", { item: null });
+
+  try {
+    const item = await Item.findById(code);
+    res.render("status", { item });
+  } catch (err) {
+    console.error(err);
+    res.render("status", { item: null });
+  }
+});
+
+
+router.post("/feedback", protect, async (req, res) => {
+   try {
+    const newFeedback = new Feedback({
+      message: req.body.message,
+      userId: req.session.user._id
+    });
+
+    await newFeedback.save();  // THIS IS IMPORTANT
+
+    // res.send("Feedback submitted successfully ✔️");
+    res.redirect("/feedback?success=Feedback submitted successfully.");
+  } catch (err) {
+    console.error("Feedback error:", err);
+    // res.status(500).send("Error submitting feedback ❌");
+    res.redirect("/feedback?error=Error submitting feedback.");
+  }
+});
+
+//to send gmail message in contact
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "techwithpralhad@gmail.com",        //  Gmail
+    pass: "bckq reto kdut csfw"            // 16-digit App Password
+  }
+});
+
+
+module.exports = router;
+dashboard.js 
+// public/js/dashboard.js
+
+document.addEventListener("DOMContentLoaded", () => {
+  // --- Item Modal Functionality (from GitHub, with homemade checks) ---
+  const addBtn = document.getElementById("addItemBtn");
+  const modal = document.getElementById("itemModal");
+  const closeModal = document.getElementById("closeModal");
+
+  if (addBtn && modal && closeModal) {
+    addBtn.addEventListener("click", () => {
+      modal.style.display = "block";
+    });
+
+    closeModal.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+
+    // Close modal if user clicks outside of it
+    window.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+  } else {
+    console.warn("One or more elements for the item modal were not found.");
+  }
+
+  // --- Navigation Button Event Listeners (from GitHub) ---
+  document.getElementById("showLostBtn").addEventListener("click", () => {
+    window.location.href = "/items/lost";
+  });
+
+  document.getElementById("showFoundBtn").addEventListener("click", () => {
+    window.location.href = "/items/found";
+  });
+
+  document.getElementById("showMyBtn").addEventListener("click", () => {
+    window.location.href = "/items/my";
+  });
+
+  document.getElementById("showAllBtn").addEventListener("click", () => {
+    window.location.href = "/items/all";
+  });
+
+  // --- Image Preview Functionality (from GitHub) ---
+  const imageInput = document.getElementById("imageInput");
+  const imagePreview = document.getElementById("imagePreview");
+
+  if (imageInput) {
+    imageInput.addEventListener("change", function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          imagePreview.src = e.target.result;
+          imagePreview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        imagePreview.style.display = "none";
+      }
+    });
+  }
+
+  // --- Flash Message Handling (from Homemade) ---
+  // Optional: Auto-hide flash messages after a few seconds
+  const flashMessage = document.querySelector('.flash-message');
+  if (flashMessage) {
+    setTimeout(() => {
+      flashMessage.style.display = 'none';
+    }, 5000); // Hide after 5 seconds
+  }
+
+  // --- Dynamic Claim/Verification Logic (from Homemade, commented for optional AJAX) ---
+  // For this setup, forms are submitted directly via HTTP POST/PUT.
+  // If you wanted AJAX for claims/verification (e.g., without page reload),
+  // you would add event listeners here to intercept form submissions,
+  // use fetch() to send data to the backend, and then update the UI dynamically.
+  // For example, to handle the verification buttons via AJAX:
+  /*
+  document.querySelectorAll('.verification-section form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // Prevent default form submission
+
+      const formData = new FormData(form);
+      const action = formData.get('action');
+      const url = form.action;
+
+      try {
+        const response = await fetch(url, {
+          method: 'PUT', // Using PUT as per our backend route
+          headers: {
+            'Content-Type': 'application/json' // Assuming backend expects JSON for action
+          },
+          body: JSON.stringify({ action: action })
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+          // Update UI dynamically: remove claim, update item status, reveal contact
+          alert(result.message); // Show success message
+          // You would typically re-fetch item data or update specific elements here
+          // For simplicity now, we'll rely on page refresh after manual submission.
+          window.location.reload(); // Reload page to show updated status
+        } else {
+          alert('Error: ' + result.message || response.statusText);
+        }
+      } catch (error) {
+        console.error('AJAX Error:', error);
+        alert('An error occurred while processing your request.');
+      }
+    });
+  });
+  */
+});
+<tbody>
+  <% users.forEach(user => { %>
+    <tr>
+      <td><%= user.username || 'N/A' %></td>
+      <td><%= user.email || 'N/A' %></td>
+      <td><%= user.role || 'user' %></td>
+      <td>
+        <%= user.createdAt ? new Date(user.createdAt).toLocaleString() : 'No date available' %>
+      </td>
+      <td>
+        <form action="/admin/delete/user/<%= user._id %>" method="POST" style="display:inline;" onsubmit="return confirmDelete('user')">
+          <button class="btn delete-btn">Delete User</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+</tbody>

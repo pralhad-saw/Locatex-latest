@@ -1,0 +1,32 @@
+// routes/pages.js (UPDATE '/contact' POST and '/feedback' POST)
+
+router.post("/contact", protect, async (req, res) => {
+  // ... existing code ...
+
+  try {
+    // ... sending email logic ...
+
+    // ⚠️ UPDATE: Redirect with success notification
+    res.redirect("/contact?success=Your message has been sent to admin successfully."); 
+  } catch (error) {
+    console.error(error);
+    // ⚠️ UPDATE: Redirect with error notification
+    res.redirect("/contact?error=Error sending message."); 
+  }
+});
+
+
+router.post("/feedback", protect, async (req, res) => {
+   try {
+    // ... saving feedback logic ...
+
+    await newFeedback.save();
+
+    // ⚠️ UPDATE: Redirect with success notification
+    res.redirect("/feedback?success=Feedback submitted successfully."); 
+  } catch (err) {
+    console.error("Feedback error:", err);
+    // ⚠️ UPDATE: Redirect with error notification
+    res.redirect("/feedback?error=Error submitting feedback.");
+  }
+});

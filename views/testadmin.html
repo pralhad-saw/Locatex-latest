@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="admin-page">
+
+  <h1>Admin Dashboard</h1>
+  
+  <!-- Registered Users Section -->
+  <h2>Registered Users</h2>
+  <table border="1">
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Role</th>
+    </tr>
+    <% users.forEach(user => { %>
+      <tr>
+        <td><%= user.username %></td>
+        <td><%= user.email %></td>
+        <td><%= user.role %></td>
+      </tr>
+    <% }) %>
+    </table border="1">
+      <tr>
+        <th> <!--a href="/download/users" class="btn btn-success">
+  Download User Report
+        </a-->
+        <form action="/download/users" method="GET">
+  <button type="submit" class="btn btn-success">
+    Download User Report
+  </button>
+        </form></th>
+      </tr>
+
+    </table>
+  <!-- Lost & Found Items Section -->
+  <h2>Lost & Found Items</h2>
+  <table border="1">
+    <tr>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Posted By</th>
+    </tr>
+    <% items.forEach(item => { %>
+      <tr>
+        <td><%= item.title %></td>
+        <td><%= item.description %></td>
+        <td><%= item.postedBy %></td>
+      </tr>
+    <% }) %>
+  </table>
+
+</body>
+    </html>

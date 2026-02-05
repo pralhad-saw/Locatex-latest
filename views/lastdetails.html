@@ -1,0 +1,43 @@
+Lost & Found System – Project Summary
+
+This project is a Lost & Found web application built using Node.js, Express, MongoDB, and EJS templates. It allows users to add, view, and manage lost or found items. Key functionalities include user management, item management with image uploads, search, and admin controls.
+
+1. User Dashboard:
+The dashboard (dashboard.ejs) shows the logged-in user’s items and allows them to add new items. Users can filter items by type (lost, found, all, or their own), search by title or description, and view contact information for each item. Each item displays a preview image if uploaded. Logged-in users can delete only their own items via a “Delete” button next to their items.
+
+2. Admin Dashboard:
+Admin users have a dedicated dashboard (admin.ejs) to manage all users and items. Admins can delete users and items with inline forms, providing full control over the system. Future improvements could include adding pagination or sorting for large datasets.
+
+3. Feedback & Contact:
+Users can submit feedback messages stored in the Feedback model. Feedback is viewable by admins. The contact messag0es feature is implemengtwrd usinjgh bbthe nemaiol sent to admin of the website
+
+4. Image Upload:
+Image uploads for items are implemented using Multer. The storage is configured with diskStorage to save files in the /uploads folder with unique filenames (Date.now() + original extension). A file filter ensures only images (jpeg, jpg, png, gif) are accepted, providing error messages for invalid formats. The uploaded images are displayed on the dashboard as previews, and the corresponding filename is saved in the MongoDB Item model.
+
+5. Routing & CRUD Operations:
+All routes are defined in items.js. Key routes include:
+
+POST /add – Adds a new item with optional image.
+
+GET /items/all, /items/lost, /items/found, /items/my – Fetch items by type or user.
+
+POST /items/delete/:id – Allows logged-in users to delete their own items.
+
+GET /search – Searches items by title or description.
+
+These routes use Mongoose for database operations and populate the postedBy field to display the username.
+
+6. GitHub Workflow:
+All changes are tracked via Git. After updates, the repository is staged, committed with a descriptive message, and pushed to GitHub. The /uploads folder should be added to .gitignore to prevent storing images in the repository, following best practices.
+
+7. Lessons & Notes:
+
+Ensure proper order of variables when using Multer (storage before upload).
+
+Use session-based checks to restrict operations (e.g., only owners can delete their items).
+
+Always validate file uploads to prevent errors and security issues.
+
+Admin features like feedback and contact messages management are essential for complete monitoring.
+
+This project demonstrates full-stack web development skills, integrating user authentication, CRUD operations, file uploads, admin controls, and real-time previews. Future improvements could include user roles, notifications, and cloud-based image storage.

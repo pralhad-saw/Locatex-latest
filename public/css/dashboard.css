@@ -1,0 +1,563 @@
+/* General Layout */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  margin: 0;
+  padding: 0;
+  color: #fff;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+/* Action Buttons */
+.actions {
+  margin: 20px 0;
+}
+
+.actions button {
+  background: #fff;
+  color: #2575fc;
+  border: none;
+  padding: 10px 18px;
+  margin: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.actions button:hover {
+  background: #2575fc;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Search Bar */
+.search-form {
+  margin-bottom: 30px;
+}
+
+.search-form input[type="text"] {
+  padding: 8px;
+  width: 250px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.search-form button {
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: none;
+  background: #fff;
+  color: #2575fc;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 5px;
+  transition: 0.3s;
+}
+
+.search-form button:hover {
+  background: #2575fc;
+  color: #fff;
+}
+
+/* Items List */
+#itemsList {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+#itemsList li {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  text-align: left;
+  transition: 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#itemsList li:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#itemsList strong {
+  color: #ffeb3b;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+}
+.modal.show {
+  display: block;
+}
+
+
+.modal-content {
+  background: #fff;
+  color: #333;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: left;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  text-align: center;
+  color: #2575fc;
+}
+
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+  width: 96%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: #2575fc;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.modal-content button:hover {
+  background: #6a11cb;
+}
+
+#closeModal {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Logout link */
+/* a[href="/logout"] {
+  display: inline-block;
+  margin-top: 20px;
+  color: #fff;
+  text-decoration: none;
+  background: #ff4757;
+  padding: 8px 15px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+a[href="/logout"]:hover {
+  background: #e84118;
+} */
+/* Updated Logout Button Position */
+.top-right-logout {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff4757;
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  z-index: 1000; /* Taaki menu ke upar dikhe */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.top-right-logout:hover {
+  background: #e84118;
+  transform: scale(1.05);
+  color: #fff;
+}
+
+/* Mobile responsive check */
+@media (max-width: 480px) {
+  .top-right-logout {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    top: 5px;
+    right: 5px;
+  }
+}
+
+/* Delete Button */
+.delete-btn {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #d11a1a;
+}
+
+/* Responsive Glass Form */
+.form-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.form-group input, 
+.form-group textarea, 
+.form-group select {
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.form-group input:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: #fff;
+    color: #2575fc;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit-btn:hover {
+    background: #6a11cb;
+    color: #fff;
+    transform: scale(1.02);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .form-container {
+        padding: 20px;
+        margin: 10px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Stack inputs more tightly on mobile */
+    .form-group input, 
+    .form-group textarea, 
+    .form-group select {
+        padding: 10px;
+    }
+}
+
+/* Mobile Fullscreen Modal */
+@media (max-width: 600px) {
+  .modal {
+    align-items: flex-end;   /* slide from bottom feel */
+    padding: 0;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    height: 92vh;
+    border-radius: 18px 18px 0 0;
+    padding: 22px;
+    animation: mobileSlide .25s ease-out;
+  }
+
+  @keyframes mobileSlide {
+    from {
+      transform: translateY(100%);
+      opacity: .8;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .modal-content h3 {
+    font-size: 20px;
+  }
+
+  /* bigger inputs for touch */
+  .modal-content input,
+  .modal-content textarea,
+  .modal-content select {
+    font-size: 16px;
+    padding: 14px;
+  }
+
+  .modal-content button {
+    padding: 16px;
+    font-size: 17px;
+  }
+
+  #imagePreview {
+    width: 140px;
+    height: 140px;
+  }
+
+  #closeModal {
+    font-size: 28px;
+  }
+}
+
+
+/* logo*/
+
+.dashboard-header-nav {
+  display: flex;
+  justify-content: space-between; /* Logo left, Hamburger right */
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
+}
+
+.logo-brand-left {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 10px;
+}
+
+.logo-brand-left img {
+  width: 70px; /* Dashboard ke liye chota aur clean logo */
+  height: 70px;
+  border-radius: 6px;
+ /* filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));*/
+ filter: brightness(0) invert(1);
+}
+
+/* .logo-brand-left span {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+} */
+
+/* Hamburger ki position reset */
+.hamburger {
+  margin: 0 !important; /* Margin auto hata kar clean alignment */
+}
+
+@media (max-width: 480px) {
+  .logo-brand-left span {
+    font-size: 1rem; /* Mobile par thoda chota */
+  }
+}
+/* Menu Navigation */
+nav.menu {
+  display: flex;
+  justify-content: center; /* Center the navigation links */
+  gap: 20px; /* Space between links */
+  margin: 20px 0;
+  padding: 10px 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Menu Links */
+nav.menu a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background 0.3s, transform 0.3s ease; /* Smooth transition for background and transform */
+}
+
+nav.menu a:hover {
+  background: rgba(255, 255, 255, 0.2); /* Hover background */
+  transform: translateY(-2px); /* Slight hover effect */
+}
+
+nav.menu a:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6); /* Focus effect */
+}
+
+/* Mobile: Stack the links vertically for smaller screens */
+@media (max-width: 768px) {
+  nav.menu {
+    flex-direction: column; /* Stack links vertically */
+    align-items: center; /* Center the links */
+  }
+
+  nav.menu a {
+    width: 100%; /* Make links full width */
+    text-align: center; /* Center text */
+    padding: 12px;
+    margin: 5px 0; /* Vertical spacing between links */
+  }
+}
+
+/* Mobile Hamburger Menu (for very small screens) */
+@media (max-width: 480px) {
+
+  nav.menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    height: 100vh;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    flex-direction: column;
+    padding-top: 80px;
+    transition: right 0.3s ease;
+    box-shadow: -5px 0 15px rgba(255, 253, 253, 0.3);
+    z-index: 999;
+  }
+
+  nav.menu.show {
+    right: 0;
+  }
+
+  nav.menu button {
+    background: transparent;
+    border: none;
+    color: #3e0b52;
+    font-size: 16px;
+    padding: 15px 25px;
+    text-align: left;
+    width: 100%;
+    transition: 0.3s;
+  }
+
+  nav.menu button:hover {
+    background: rgba(255,255,255,0.1);
+    padding-left: 35px;
+    color: #38bdf8;
+  }
+}
+
+
+
+
+/* Hamburger Icon */ 
+.hamburger {
+   display: none;
+    flex-direction: column; 
+    justify-content: space-between; 
+    width: 30px; 
+    height: 25px; 
+    cursor: pointer; 
+    position: relative; /* Add this */
+    z-index: 1000;      /* Add this (Menu 999 se bada) */
+  } 
+    .hamburger div 
+    { 
+      background-color: white; 
+      height: 4px; 
+      border-radius: 3px; 
+      transition: 0.3s ease; 
+    } 
+    /* When the hamburger is clicked to open the menu */
+    .hamburger.open div:nth-child(1) 
+    { 
+      transform: rotate(45deg) translateY(7px);
+     } 
+    .hamburger.open div:nth-child(2) 
+    { 
+      opacity: 0; 
+    } 
+    .hamburger.open div:nth-child(3) 
+    { 
+      transform: rotate(-45deg) translateY(-7px); 
+    } 
+    /* Show hamburger icon in mobile */
+     @media (max-width: 480px) 
+    {
+       .hamburger 
+      { 
+      display: flex; 
+    } 
+  }
+
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6); /* Halka white/grey */
+  margin-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}

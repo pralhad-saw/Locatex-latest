@@ -1,0 +1,127 @@
+
+
+line 128 se 250
+
+ <ul id="itemsList">
+  <% items.forEach(item => { %>
+    <li data-item-id="<%= item._id %>"
+      style="<%= (typeof matchIds !== 'undefined' && matchIds.includes(item._id.toString())) ? 'border: 2px solid #00ff00; background: rgba(0, 255, 0, 0.1);' : '' %>">
+      <% if (typeof matchIds !== 'undefined' && matchIds.includes(item._id.toString())) { %>
+            <div style="color: green; font-weight: bold;">🔥 SMART MATCH FOUND!</div>
+        <% } %>
+
+     <strong>Status:
+  <% if (item.status === 'available') { %>
+    <span style="color: gray;">AVAILABLE</span>
+  <% } else if (item.status === 'pending_claim') { %>
+    <span style="color: orange;">CLAIM PENDING</span>
+  <% } else if (item.status === 'claimed') { %>
+    <span style="color: blue;">CLAIMED</span>
+  <% } else if (item.status === 'recovered') { %>
+    <span style="color: green;">RECOVERED</span>
+  <% } else if (item.status === 'unclaimed') { %>
+    <span style="color: brown;">UNCLAIMED</span>
+  <% } else { %>
+    <span>UNKNOWN</span>
+  <% } %>
+</strong>
+
+
+ <hr style="border-top: 1px solid #ccc; margin: 5px 0;">
+
+      <strong><%= item.type.toUpperCase() %></strong> - 
+      <%= item.title %> : <%= item.description %> 
+      <!-- Contact Info Display
+      <span class="contact-info">
+        <% if (item.isContactVisible) { %>
+          (Contact: <%= item.contact %>)
+        <% } else { %>
+          (Contact: Hidden - Claim to reveal)
+        <% } %>
+      </span>
+      <p style="margin: 5px 0;">
+        Found/Lost At: <b><%= item.location %></b>
+      </p>
+       <% if(item.image){ %>
+      <br><img src="/uploads/<%= item.image %>" width="100"/>
+    <% } %>
+      <small>Posted by: <%= item.ownerId ? item.ownerId.username : "Unknown" %></small>
+      <br>
+      <!-- Claim Submission Section (for users who are NOT the owner) -->
+      <% if (user && item.ownerId && user._id.toString() !== item.ownerId._id.toString()) { %>
+        <div class="claim-section" id="claim-section-<%= item._id %>">
+          <h4>Claim this Item</h4>
+          <form action="/items/<%= item._id %>/claim" method="POST">
+            <textarea name="proofDescription" placeholder="Provide proof of ownership/finding (e.g., unique feature, contents). This will be reviewed by the owner." required></textarea>
+            <button type="submit">Submit Claim</button>
+          </form>
+          <% if (item.claims && item.claims.length > 0) { %>
+            <div class="claim-status">Your Claims:</div>
+            <% item.claims.forEach(claim => { %>
+              <% if (claim.requesterId.toString() === user._id.toString()) { %>
+                <div class="claim-details">
+                  Status: <strong style="text-transform: capitalize;"><%= claim.status %></strong> 
+                  <% if (claim.status === 'pending') { %>
+                    (Awaiting owner's review)
+                  <% } else if (claim.status === 'accepted') { %>
+                  <% if (claim.status === 'accepted') { %>
+  <p><b> Claim Accepted!</b> <i>Contact info revealed.</i> Please contact the owner to collect your item.</p>
+<% } %>
+
+                  <% } else if (claim.status === 'rejected') { %>
+                    (Claim Rejected)
+                  <% } %>
+                  <br>
+                  Submitted: <%= new Date(claim.claimedAt).toLocaleString() %>
+                </div>
+              <% } %>
+            <% }) %>
+          <% } %>
+        </div>
+      <% } %>
+
+      <!-- Verification Section (for the item owner or admin) -->
+      <% if (user && item.ownerId && user._id.toString() === item.ownerId._id.toString() && (item.status === 'pending_claim' )) { %>
+        <% if (item.claims && item.claims.length > 0) { %>
+          <div class="verification-section">
+            <h4>Pending Claims</h4>
+            <% item.claims.forEach(claim => { %>
+              <% if (claim.status === 'pending') { %>
+                <div style="border: 1px solid #eee; padding: 8px; margin-bottom: 8px;">
+                  Claimed by: <strong><%= claim.requesterId ? claim.requesterId.username : 'Unknown User' %></strong><br>
+                  Proof: "<%= claim.proofDescription %>"<br>
+                  Submitted: <%= new Date(claim.claimedAt).toLocaleString() %>
+                  <br>
+                  <form action="/items/<%= item._id %>/claims/<%= claim._id %>/verify" method="POST" style="display: inline-block; margin-left: 10px;">
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="accept-btn">Accept Claim</button>
+                  </form>
+                  <form action="/items/<%= item._id %>/claims/<%= claim._id %>/verify" method="POST" style="display: inline-block; margin-left: 10px;">
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="reject-btn">Reject Claim</button>
+                  </form>
+                </div>
+              <% } %>
+            <% }) %>
+          </div>
+        <% } %>
+      <% } %>
+      <!-- Show delete button ONLY if logged-in user is the owner -->
+     <% if (item.ownerId && item.ownerId._id.toString() === user._id.toString()) { %>
+  <% 
+    // Check if any claim is accepted
+    const hasAcceptedClaim = item.claims && item.claims.some(claim => claim.status === 'accepted'); 
+  %>
+  <% if (hasAcceptedClaim && item.status !== 'recovered') { %>
+    <form action="/items/resolve/<%= item._id %>" method="POST" style="display:inline;">
+      <button class="resolve-btn" style="background-color: green; color: white;">Mark Resolved</button>
+    </form>
+  <% } %>
+  <form action="/items/delete/<%= item._id %>" method="POST" style="display:inline;">
+    <button class="delete-btn">Delete</button>
+  </form>
+<% } %>
+
+    </li>
+  <% }) %>
+</ul> -->

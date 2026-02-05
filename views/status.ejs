@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Claims Status</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/pages.css">
+ 
+</head>
+<body>
+
+<div class="container">
+  <h2>My Claim Requests</h2>
+  <p>Track the items you've claimed below:</p>
+
+  <% if (myClaims.length === 0) { %>
+    <p>You haven't submitted any claims yet.</p>
+  <% } else { %>
+    <% myClaims.forEach(item => { %>
+      <div class="status-card">
+        <h3><%= item.title %> <span class="tag"><%= item.type %></span></h3>
+        <p><b>Posted by:</b> <%= item.ownerId ? item.ownerId.username : "Unknown" %></p>
+        
+        <hr>
+        
+        <% // Find the specific claim made by THIS user %>
+        <% const mySpecificClaim = item.claims.find(c => c.requesterId.toString() === user._id.toString()) %>
+        
+        <% if (mySpecificClaim) { %>
+          <p><b>Your Claim Status:</b> 
+            <% if (mySpecificClaim.status === 'accepted') { %>
+              <span class="status-accepted">ACCEPTED</span>
+              <br><small>✅ The owner has verified your proof. You can now see their contact details on the dashboard.</small>
+            <% } else if (mySpecificClaim.status === 'rejected') { %>
+              <span class="status-rejected">REJECTED</span>
+              <br><small>❌ The owner did not accept your proof description.</small>
+            <% } else { %>
+              <span class="status-pending">PENDING REVIEW</span>
+              <br><small>⏳ Waiting for the owner to verify your proof.</small>
+            <% } %>
+          </p>
+          <p><small>Claimed on: <%= new Date(mySpecificClaim.claimedAt).toLocaleDateString() %></small></p>
+        <% } %>
+      </div>
+    <% }) %>
+  <% } %>
+
+  <br>
+  <a href="/dashboard" class="btn">Back to Dashboard</a>
+</div>
+  <footer>
+  <p>&copy; 2026 LocateX - Proprietary Technology. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

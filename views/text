@@ -1,0 +1,784 @@
+this are ejs pages
+
+aboutus
+<!DOCTYPE html>
+<html>
+<head>
+  <title>About Us Page</title>
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>About Us</h2>
+
+  <p>
+    This Lost & Found System helps students report lost items,
+    find owners of found items, and reduce campus confusion.
+  </p>
+
+  <a href="/dashboard" class="btn">Back</a>
+</div>
+
+</body>
+</html>
+
+aDMIN
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="admin-page">
+
+  <h1>Admin Dashboard</h1>
+
+  <!-- Registered Users Section -->
+  <h2>Registered Users</h2>
+  <table border="1">
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Role</th>
+    </tr>
+    <% users.forEach(user => { %>
+      <tr>
+        <td><%= user.username %></td>
+        <td><%= user.email %></td>
+        <td><%= user.role %></td>
+      </tr>
+    <% }) %>
+  </table>
+
+  <!-- Lost & Found Items Section -->
+  <h2>Lost & Found Items</h2>
+  <table border="1">
+    <tr>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Posted By</th>
+    </tr>
+    <% items.forEach(item => { %>
+      <tr>
+        <td><%= item.title %></td>
+        <td><%= item.description %></td>
+        <td><%= item.postedBy %></td>
+      </tr>
+    <% }) %>
+  </table>
+
+</body>
+    </html>
+CONTACT
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Contact Us Page</title>
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>Contact Us</h2>
+
+  <form method="POST" action="/contact">
+    <input type="text" name="name" placeholder="Your Name" required>
+    <input type="email" name="email" placeholder="Your Email" required>
+    <textarea name="message" placeholder="Your Message" required></textarea>
+    <button type="submit">Send</button>
+  </form>
+
+  <a href="/dashboard" class="btn">Back</a>
+</div>
+
+</body>
+</html>
+
+DASHBOARD
+
+  <!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <div class="container">
+
+    
+<nav class="menu">
+  <a href="/profile">Profile</a>
+  <a href="/contact">Contact Us</a>
+  <a href="/about">About Us</a>
+  <a href="/status">Status</a>
+  <a href="/feedback">Feedback</a>
+
+</nav>
+
+    <h2>Welcome <%= user.username %> 👋</h2>
+
+    <!-- Buttons -->
+    <div class="actions">
+      <button id="addItemBtn" onClick="showAddItemCard()">+ Add Item</button>
+      <button id="showLostBtn">Lost Items</button>
+      <button id="showFoundBtn">Found Items</button>
+      <button id="showAllBtn">All Items</button>
+      <button id="showMyBtn">Your Items</button>
+    </div>
+
+    <!-- Search bar -->
+    <form method="GET" action="/search">
+      <input type="text" name="q" placeholder="Search items..." />
+      <button type="submit">Search</button>
+    </form>
+
+    <!-- Items list -->
+    <h3>Items</h3>
+    <ul id="itemsList">
+      <% items.forEach(item => { %>
+        <li>
+          <strong><%= item.type.toUpperCase() %></strong> - 
+          <%= item.title %> : <%= item.description %> 
+          (Contact: <%= item.contact %>) 
+          <small>Posted by: <%= item.postedBy %></small>
+        </li>
+      <% }) %>
+    </ul>
+
+    <!-- Add Item Modal -->
+    <div id="itemModal" class="modal">
+      <div class="modal-content">
+        <span id="closeModal">&times;</span>
+        <h3>Add New Item</h3>
+        <form method="POST" action="/add">
+          <input type="text" name="title" placeholder="Item Title" required />
+          <textarea name="description" placeholder="Description"></textarea>
+          <select name="type" required>
+            <option value="lost">Lost</option>
+            <option value="found">Found</option>
+          </select>
+          <input type="text" name="contact" placeholder="Contact Info" required />
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+
+    <a href="/logout">Logout</a>
+  </div>
+  <script src="/js/dashboard.js"></script>
+</body>
+      </html>
+EDITPROFILR
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Profile</title>
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+<div class="container">
+  <h2>Edit Profile</h2>
+
+  <form method="POST" action="/profile/edit">
+    <input type="text" name="username" value="<%= user.username %>" required>
+    <input type="email" name="email" value="<%= user.email %>" required>
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <a href="/profile" class="btn">Back</a>
+</div>
+</body>
+</html>
+
+FEEDBACK
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Feedback Page</title>
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>Feedback</h2>
+
+  <form method="POST" action="/feedback">
+    <textarea name="message" placeholder="Please Enter Your Feedback...  OR Any Suggestions for us to improve!!" required></textarea>
+    <button type="submit">Submit</button>
+  </form>
+
+  <a href="/dashboard" class="btn">Back</a>
+</div>
+
+</body>
+</html>
+
+INDEX
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lost & Found System</title>
+  <link rel="stylesheet" href="/css/style-index.css">
+</head>
+<body>
+  <div class="main">
+    <h1>Lost & Found System</h1>
+    <p>Helping students connect lost items with their owners</p>
+
+    <div class="buttons">
+      <a href="/login" class="btn">Login</a>
+      <a href="/register" class="btn">Register</a>
+    </div>
+  </div>
+</body>
+</html>
+login
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Lost & Found</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container auth-container">
+    <h2>Login</h2>
+
+    <form method="POST" action="/login">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <p class="auth-footer">
+      Don’t have an account? <a href="/register">Register</a>
+    </p>
+  </div>
+</body>
+</html>
+profile
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile Page</title>
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>Your Profile</h2>
+
+  <div class="card">
+    <p><strong>Username:</strong> <%= user.username %></p>
+    <p><strong>Email:</strong> <%= user.email %></p>
+    <a href="/profile/edit" class="btn">Edit Profile</a>
+
+
+    <a href="/dashboard" class="btn">Back to Dashboard</a>
+  </div>
+</div>
+
+</body>
+</html>
+
+register
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Lost & Found</title>
+  <link rel="stylesheet" href="/css/style.css"> <!-- Link to main CSS -->
+</head>
+<body>
+  <div class="container auth-container">
+    <h2>Create Account</h2>
+
+    <form action="/register" method="POST">
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Register</button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a href="/login">Login</a>
+    </p>
+  </div>
+</body>
+</html>
+status
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Status Page</title>
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>Item Status</h2>
+
+  <p>Search your item status:</p>
+
+  <form action="/status" method="GET">
+    <input type="text" name="code" placeholder="Enter Item Code" required>
+    <button type="submit">Check Status</button>
+  </form>
+
+  <!-- <% if (item) { %>
+    <div class="card">
+      <p><strong>Title:</strong> <%= item.title %></p>
+      <p><strong>Status:</strong> <%= item.type %></p>
+    </div>
+  <% } %> -->
+
+<% if (item) { %>
+<div class="card">
+  <p><b>Item:</b> <%= item.title %></p>
+  <p><b>Status:</b> <%= item.type %></p>
+  <p><b>Description:</b> <%= item.description %></p>
+</div>
+<% } %>
+
+
+  <a href="/dashboard" class="btn">Back</a>
+</div>
+
+</body>
+</html>
+
+
+server.js
+
+const express = require("express");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const path = require("path");
+
+const app = express();
+
+// ===== Middleware =====
+app.set("view engine", "ejs"); // use EJS templates
+app.set("views", path.join(__dirname, "views"));
+
+//serve static files
+app.use(express.static(path.join(__dirname,"public")));
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "lostfoundsecret",
+    resave: false,
+    saveUninitialized: true,
+  }),
+);
+
+
+// ===== MongoDB Connection =====
+// ⚠️ IMPORTANT: Replace with your MongoDB Atlas connection string
+mongoose
+  .connect(
+    "mongodb+srv://KingCoder:nsnsnsjsjdnek@cluster0.zwprsfx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+    //reson for commenting this urlnewparser
+    //today date 24 nove 2025 it is saying it is deprecated in nodejs v4+ so
+    //{ useNewUrlParser: true, useUnifiedTopology: true }, 
+  )
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.log("❌ DB Error: " + err));
+
+// ===== Routes =====
+const authRoutes = require("./routes/auth");
+const itemRoutes = require("./routes/items");
+const adminRoutes = require("./routes/admin");
+const pagesRoutes = require("./routes/pages");
+
+
+app.use("/", authRoutes);
+app.use("/", itemRoutes);
+app.use("/", adminRoutes);
+app.use("/", pagesRoutes);
+
+// ===== Homepage =====
+app.get("/", (req, res) => {
+  res.render("index");
+});
+
+//app.use(express.static("public"));
+
+
+
+// ===== Start Server =====
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`),
+);
+
+
+these are routes pages
+
+admin.js
+
+const express = require("express");
+const User = require("../models/User");
+const Item = require("../models/Item");
+const router = express.Router();
+
+// Admin Dashboard
+router.get("/admin", async (req, res) => {
+    if (!req.session.user || req.session.user.role !== "admin") return res.send("Access Denied");
+    const users = await User.find();
+    const items = await Item.find();
+    res.render("admin", { users, items });
+});
+
+module.exports = router
+
+auth.js
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
+const router = express.Router();
+
+// Render login page
+router.get("/login", (req, res) => {
+    if (req.session.user) return res.redirect("/dashboard");
+    res.render("login");
+});
+
+// Render register page
+router.get("/register", (req, res) => {
+    if (req.session.user) return res.redirect("/dashboard");
+    res.render("register");
+});
+// Register
+router.post("/register", async (req, res) => {
+    const { username, email, password } = req.body;
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({ username, email, password: hashedPassword });
+        await user.save();
+        req.session.user = user;
+        res.redirect("/dashboard"); // after successful register
+    } catch (err) {
+        console.error(err);
+        res.send("Error during registration ❌");
+    }
+});
+
+// Login
+router.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.send("No user found");
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (isMatch) {
+        req.session.user = user;
+        if (user.role === "admin") {
+            return res.redirect("/admin");
+        }
+        res.redirect("/dashboard");
+    } else {
+        res.send("Invalid credentials");
+    }
+});
+
+// Logout
+router.get("/logout", (req, res) => {
+    req.session.destroy();
+    res.redirect("/");
+});
+
+router.get("/", (req, res) => {
+    res.render("index");
+}
+);
+module.exports = router;
+
+items.js
+const express = require("express");
+const Item = require("../models/Item");
+const router = express.Router();
+
+// Add Item
+router.post("/add", async (req, res) => {
+  try {
+    const { title, description, type, contact } = req.body;
+    const newItem = new Item({
+      title,
+      description,
+      type,
+      contact,
+      postedBy: req.session.user._id   // store logged-in user ID
+    });
+    await newItem.save();
+    res.redirect("/dashboard");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error adding item");
+  }
+});
+
+// ✅ Get all items
+router.get("/items/all", async (req, res) => {
+  try {
+    const items = await Item.find().populate("postedBy", "username");
+    res.render("dashboard", { user: req.session.user, items });
+  } catch (err) {
+    res.status(500).send("Error fetching items");
+  }
+});
+
+// ✅ Get only lost items
+router.get("/items/lost", async (req, res) => {
+  try {
+    const items = await Item.find({ type: "lost" }).populate("postedBy", "username");
+    res.render("dashboard", { user: req.session.user, items });
+  } catch (err) {
+    res.status(500).send("Error fetching lost items");
+  }
+});
+
+// ✅ Get only found items
+router.get("/items/found", async (req, res) => {
+  try {
+    const items = await Item.find({ type: "found" }).populate("postedBy", "username");
+    res.render("dashboard", { user: req.session.user, items });
+  } catch (err) {
+    res.status(500).send("Error fetching found items");
+  }
+});
+
+// ✅ Get items of logged-in user
+router.get("/items/my", async (req, res) => {
+  try {
+    const items = await Item.find({ postedBy: req.session.user._id });
+    res.render("dashboard", { user: req.session.user, items });
+  } catch (err) {
+    res.status(500).send("Error fetching my items");
+  }
+});
+
+// ✅ Search items by title or description
+router.get("/search", async (req, res) => {
+  try {
+    const query = req.query.q;
+    const items = await Item.find({
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } }
+      ]
+    }).populate("postedBy", "username");
+    res.render("dashboard", { user: req.session.user, items });
+  } catch (err) {
+    res.status(500).send("Error searching items");
+  }
+});
+
+
+
+
+
+// Dashboard (User)
+router.get("/dashboard", async (req, res) => {
+    if (!req.session.user) return res.redirect("/login");
+    const items = await Item.find();
+    res.render("dashboard", { items, user: req.session.user });
+});
+
+module.exports = router;
+pages.js
+const express = require("express");
+const router = express.Router();
+const Contact = require("../models/Contact");
+const Item = require("../models/Item");
+const Feedback = require("../models/Feedback");
+const User = require("../models/User");
+const nodemailer = require("nodemailer");
+
+
+
+function protect(req, res, next) {
+  if (!req.session.user) return res.redirect("/login");
+  next();
+}
+
+router.get("/profile", protect, (req, res) => {
+  res.render("profile", { user: req.session.user });
+});
+
+router.get("/contact", protect, (req, res) => {
+  res.render("contact");
+});
+
+router.post("/contact", protect, (req, res) => {
+  console.log("Message from user:", req.body);
+  res.send("Message sent ✔️");
+});
+
+router.get("/about", protect, (req, res) => {
+  res.render("about");
+});
+
+router.get("/status", protect, (req, res) => {
+  res.render("status", { item: null });
+});
+
+router.get("/feedback", protect, (req, res) => {
+  res.render("feedback");
+});
+
+router.post("/feedback", protect, (req, res) => {
+  console.log("User feedback:", req.body);
+  res.send("Thanks for your feedback ✔️");
+});
+
+
+router.get("/profile/edit", protect, (req, res) => {
+  res.render("editProfile", { user: req.session.user });
+});
+
+router.post("/profile/edit", protect, async (req, res) => {
+  const { username, email } = req.body;
+
+  await User.findByIdAndUpdate(req.session.user._id, { 
+    username, 
+    email 
+  });
+
+  req.session.user.username = username;
+  req.session.user.email = email;
+
+  res.redirect("/profile");
+});
+
+
+
+router.post("/contact", protect, async (req, res) => {
+  const { name, email, message } = req.body;
+
+  try {
+    await transporter.sendMail({
+      from: email,
+      to: "",
+      subject: "New Contact Message From Lost & Found System",
+      html: `
+        <h3>New message from: ${name}</h3>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Message:</b><br>${message}</p>
+      `
+    });
+
+    res.send("Your message has been sent to admin successfully ✔️");
+  } catch (error) {
+    console.error(error);
+    res.send("Error sending message ❌");
+  }
+});
+
+
+
+router.get("/status", protect, async (req, res) => {
+  const code = req.query.code;
+
+  if (!code) return res.render("status", { item: null });
+
+  try {
+    const item = await Item.findById(code);
+    res.render("status", { item });
+  } catch (err) {
+    console.error(err);
+    res.render("status", { item: null });
+  }
+});
+
+
+router.post("/feedback", protect, async (req, res) => {
+   try {
+    const newFeedback = new Feedback({
+      message: req.body.message,
+      userId: req.session.user._id
+    });
+
+    await newFeedback.save();  // THIS IS IMPORTANT
+
+    res.send("Feedback submitted successfully ✔️");
+  } catch (err) {
+    console.error("Feedback error:", err);
+    res.status(500).send("Error submitting feedback ❌");
+  }
+});
+
+//to send gmail message in contact
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "",        //  Gmail
+    pass: "bckq reto kdut csfw"            // 16-digit App Password
+  }
+});
+
+
+module.exports = router;
+
+
+models
+
+contact.js
+const mongoose = require("mongoose");
+
+const ContactSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  message: String,
+  userId: String
+});
+
+module.exports = mongoose.model("Contact", ContactSchema);
+
+feedback.js
+const mongoose = require("mongoose");
+
+const FeedbackSchema = new mongoose.Schema({
+  message: String,
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  date: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model("Feedback", FeedbackSchema);
+
+Item.js
+
+
+const mongoose = require("mongoose");
+
+const itemSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  type: { type: String, enum: ["lost", "found"], required: true },
+  contact: { type: String, required: true },
+  postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model("Item", itemSchema);
+
+User.js
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+    username: String,
+    email: String,
+    password: String,
+    role: { type: String, default: "user" ,
+          enum: ["user", "admin"]} // "user" or "admin"
+});
+
+module.exports = mongoose.model("User", userSchema);

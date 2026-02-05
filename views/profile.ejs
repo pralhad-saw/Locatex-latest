@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/pages.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>Your Profile</h2>
+
+  <div class="card">
+    <p><strong>Username:</strong> <%= user.username %></p>
+    <p><strong>Email:</strong> <%= user.email %></p>
+    <a href="/profile/edit" class="btn">Edit Profile</a>
+
+
+    <a href="/dashboard" class="btn">Back to Dashboard</a>
+  </div>
+</div>
+  <footer>
+  <p>&copy; 2026 LocateX - Proprietary Technology. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

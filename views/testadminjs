@@ -1,0 +1,39 @@
+const express = require("express");
+const User = require("../models/User");
+const Item = require("../models/Item");
+const router = express.Router();
+
+// Admin Dashboard
+router.get("/admin", async (req, res) => {
+    if (!req.session.user || req.session.user.role !== "admin") return res.send("Access Denied");
+    const users = await User.find();
+    const items = await Item.find();
+    res.render("admin", { users, items });
+});
+
+router.get("/download/download-csv/users", async (req, res) => {
+  try {
+    const users = await User.find().select("username email createdAt");
+
+    // CSV header
+    let csv = "Username,Email,Created At\n";
+
+    // CSV rows
+    users.forEach(user => {
+      csv += ${user.username},${user.email},${user.createdAt}\n;
+    });
+
+    // Set headers to force download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=users_report.csv");
+
+    res.send(csv);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generating report");
+  }
+});
+
+
+module.exports = router;

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="apple-touch-icon" href="/images/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    /* Basic styling for claim submission and verification */
+    .claim-section { margin-top: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9; }
+    .claim-section h4 { margin-top: 0; }
+    .claim-section form { display: flex; flex-direction: column; gap: 5px; }
+    .claim-section input[type="text"], .claim-section textarea { padding: 8px; border: 1px solid #ddd; border-radius: 3px; }
+    .claim-section button { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer; }
+    .claim-section button:hover { background-color: #45a049; }
+    .claim-section .claim-status { font-weight: bold; margin-bottom: 5px; }
+    .claim-section .claim-details { font-size: 0.9em; color: #555; }
+
+    .verification-section { margin-top: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #eef; }
+    .verification-section h4 { margin-top: 0; }
+    .verification-section form { display: flex; gap: 10px; }
+    .verification-section button { padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; }
+    .verification-section .accept-btn { background-color: #4CAF50; color: white; }
+    .verification-section .accept-btn:hover { background-color: #45a049; }
+    .verification-section .reject-btn { background-color: #f44336; color: white; }
+    .verification-section .reject-btn:hover { background-color: #da190b; }
+
+    /* Styling for contact info visibility */
+    .contact-info { color: #888; font-style: italic; }
+    .contact-info-visible { color: #000; font-weight: bold; }
+
+    /* Flash message styling */
+    .flash-message {
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .flash-message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+    .flash-message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
+    .flash-message.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;}
+
+  /* Glowing effect for Smart Match */
+.smart-match-highlight {
+    border: 3px solid #28a745 !important;
+    background-color: #f0fff4 !important; /* Soft light green */
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    position: relative;
+    list-style: none;
+}
+
+.match-badge {
+    background: #28a745;
+    color: white;
+    padding: 4px 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+  </style>
+</head>
+<body class="admin-page">
+  <div class="container">
+    <% if (user.role === 'admin') { %>
+    <a href="/admin" style="background: #f1c40f; color: #000; padding: 8px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-right: 10px;">
+        ⚙️ Back to Admin Panel
+    </a>
+<% } %>
+    <a href="/logout" class="top-right-logout">Logout</a>
+    <!-- Flash Message Display -->
+    <!-- Flash Message Display -->
+
+<% if (typeof message !== 'undefined' && message) { %>
+  <div class="flash-message success"><%= message %></div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="flash-message error"><%= error %></div>
+<% } %>
+
+    <div class="dashboard-header-nav">
+  <a href="/items/all" class="logo-brand-left">
+    <img src="/images/logo.png" alt="Logo">
+    <!-- <span>LocateX</span> -->
+  </a>
+
+  <div class="hamburger" id="hamburger">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+  </div>
+<nav class="menu">
+  <a href="/profile">Profile</a>
+  <a href="/contact">Contact Us</a>
+  <a href="/about">About Us</a>
+  <a href="/status">Status</a>
+  <a href="/feedback">Feedback</a>
+
+</nav>
+
+
+  
+
+<h2 style=" margin: 20px 0; font-size: 1.5rem;">Welcome <%= user.username %> 👋</h2>
+    <!-- <h2>Welcome <%= user.username %> 👋</h2> -->
+
+    <!-- Buttons -->
+    <div class="actions">
+      <button id="addItemBtn" >+ Add Item</button>
+      <button  id="showLostBtn" onclick="window.location.href='/items/lost'">Lost Items</button>
+      <button id="showFoundBtn" onclick="window.location.href='/items/found'">Found Items</button>
+      <button id="showAllBtn" onclick="window.location.href='/items/all'">All Items</button>
+      <button  id="showMyBtn" onclick="window.location.href='/items/my'">Your Items</button>
+    </div>
+
+    <!-- Search bar -->
+    <form method="GET" action="/search">
+  
+<input
+  type="text"
+  name="q"
+  placeholder="Search items..."
+  value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+
+/>
+
+
+
+      <button type="submit">Search</button>
+    </form>
+
+    <!-- Items list -->
+    <h3>Items</h3>
+<ul id="itemsList" style="list-style: none; padding: 0;">
+  <% 
+   
+  // URL se matchIds string nikal kar array banao
+  let matchIdsRaw = typeof matchIds !== 'undefined' ? matchIds : '';
+  let matchIdsArr = [];
+
+  if (Array.isArray(matchIdsRaw)) {
+      matchIdsArr = matchIdsRaw;
+  } else if (typeof matchIdsRaw === 'string' && matchIdsRaw.length > 0) {
+      matchIdsArr = matchIdsRaw.split(',');
+  }
+
+  // Filter logic
+  let matchedItems = items.filter(item => matchIdsArr.includes(item._id.toString()));
+  let otherItems = items.filter(item => !matchIdsArr.includes(item._id.toString()));
+
+    // Helper to render an item - Yeh aapka wahi logic hai jo pehle tha
+    const renderItemContent = (item, isMatched) => { %>
+      <strong>Status:
+        <% if (item.status === 'available') { %><span style="color: gray;">AVAILABLE</span>
+        <% } else if (item.status === 'pending_claim') { %><span style="color: orange;">CLAIM PENDING</span>
+        <% } else if (item.status === 'claimed') { %><span style="color: blue;">CLAIMED</span>
+        <% } else if (item.status === 'recovered') { %><span style="color: green;">RECOVERED</span>
+        <% } else if (item.status === 'unclaimed') { %><span style="color: brown;">UNCLAIMED</span>
+        <% } %>
+      </strong>
+
+      <hr style="border-top: 1px solid #ccc; margin: 5px 0;">
+      <strong><%= item.type.toUpperCase() %></strong> - <%= item.title %> : <%= item.description %> 
+      
+      <span class="contact-info">
+        <% if (item.isContactVisible) { %>
+          <span class="contact-info-visible">(Contact: <%= item.contact %>)</span>
+        <% } else { %>
+          (Contact: Hidden - Claim to reveal)
+        <% } %>
+      </span>
+
+      <p style="margin: 5px 0;">Found/Lost At: <b><%= item.location %></b></p>
+      <% if(item.image){ %> <br><img src="/uploads/<%= item.image %>" width="100" style="border-radius: 5px;"/><% } %>
+      <br><small>Posted by: <%= item.ownerId ? item.ownerId.username : "Unknown" %></small>
+      <br>
+
+      <% if (user && item.ownerId && user._id.toString() !== item.ownerId._id.toString()) { %>
+        <div class="claim-section">
+          <h4>Claim this Item</h4>
+          <form action="/items/<%= item._id %>/claim" method="POST">
+            <textarea name="proofDescription" placeholder="Provide proof of ownership..." required></textarea>
+            <button type="submit">Submit Claim</button>
+          </form>
+          <% if (item.claims && item.claims.length > 0) { %>
+            <% item.claims.forEach(claim => { %>
+              <% if (claim.requesterId.toString() === user._id.toString()) { %>
+                <div class="claim-details">Status: <strong><%= claim.status %></strong></div>
+              <% } %>
+            <% }) %>
+          <% } %>
+        </div>
+      <% } %>
+
+      <% if (user && item.ownerId && user._id.toString() === item.ownerId._id.toString() && item.status === 'pending_claim') { %>
+        <div class="verification-section">
+          <h4>Pending Claims</h4>
+          <% item.claims.forEach(claim => { %>
+            <% if (claim.status === 'pending') { %>
+              <div style="border-bottom: 1px solid #ddd; padding: 5px;">
+                User: <%= claim.requesterId ? claim.requesterId.username : 'Unknown' %><br>
+                Proof: <%= claim.proofDescription %><br>
+                <form action="/items/<%= item._id %>/claims/<%= claim._id %>/verify" method="POST" style="display:inline;">
+                  <input type="hidden" name="action" value="accept">
+                  <button type="submit" class="accept-btn">Accept</button>
+                </form>
+                <form action="/items/<%= item._id %>/claims/<%= claim._id %>/verify" method="POST" style="display:inline;">
+                  <input type="hidden" name="action" value="reject">
+                  <button type="submit" class="reject-btn">Reject</button>
+                </form>
+              </div>
+            <% } %>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <% if (item.ownerId && item.ownerId._id.toString() === user._id.toString()) { %>
+        <div style="margin-top: 10px;">
+          <% if (item.claims.some(c => c.status === 'accepted') && item.status !== 'recovered') { %>
+            <form action="/items/resolve/<%= item._id %>" method="POST" style="display:inline;">
+              <button style="background: green; color: white; padding: 5px; border-radius: 3px; cursor: pointer;">Mark Resolved</button>
+            </form>
+          <% } %>
+          <form action="/items/delete/<%= item._id %>" method="POST" style="display:inline;">
+            <button style="background: #f44336; color: white; padding: 5px; border-radius: 3px; cursor: pointer;">Delete</button>
+          </form>
+        </div>
+      <% } %>
+    <% }; %>
+
+  <% matchedItems.forEach(item => { %>
+    <li class="smart-match-highlight" data-item-id="<%= item._id %>">
+      <div class="match-badge">🔥 SMART MATCH FOUND!</div>
+      <% renderItemContent(item, true); %>
+    </li>
+  <% }) %>
+
+  <% if (matchedItems.length > 0) { %>
+    <div style="text-align: center; margin: 20px 0; color: #28a745; font-weight: bold;">──────── OTHER ITEMS ────────</div>
+  <% } %>
+
+  <% otherItems.forEach(item => { %>
+    <li data-item-id="<%= item._id %>" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+      <% renderItemContent(item, false); %>
+    </li>
+  <% }) %>
+</ul>
+      <div id="itemModal" class="modal">
+      <div class="modal-content">
+        <span id="closeModal">&times;</span>
+        <h3>Add New Item</h3>
+        <!-- without image
+         <form method="POST" action="/add">
+          <input type="text" name="title" placeholder="Item Title" required />
+          <textarea name="description" placeholder="Description"></textarea>
+          <select name="type" required>
+            <option value="lost">Lost</option>
+            <option value="found">Found</option>
+          </select>
+          <input type="text" name="contact" placeholder="Contact Info" required />
+          <button type="submit">Submit</button>
+        </form> -->
+      <form method="POST" action="/add" enctype="multipart/form-data">
+    <label>Item Title</label>
+    <input type="text" name="title" required>
+
+    <textarea name="description" placeholder="Description"></textarea>
+    
+    <select name="type" required>
+        <option value="lost">Lost</option>
+        <option value="found">Found</option>
+    </select>
+
+    <input type="text" name="contact" placeholder="Contact Info" required />
+    <input type="text" name="location" placeholder="Where it was found or lost??" required />
+
+    <input type="text" name="secretVerificationDetail" placeholder="Secret detail (e.g. inside pocket color)" required />
+
+    <input type="file" name="image" id="imageInput" accept="image/*" />
+    <img id="imagePreview" src="#" style="display:none; width:100px; margin-top:10px;" />
+
+    <button type="submit">Submit</button>
+</form>
+
+      </div>
+    </div>
+    
+  </div>
+  <footer>
+  <p>&copy; 2026 LocateX - Proprietary Technology. All Rights Reserved.</p>
+  </footer>
+  <script src="/js/dashboard.js"></script>
+</body>
+      </html>

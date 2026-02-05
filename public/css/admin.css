@@ -1,0 +1,178 @@
+/* ===== RESET & BASE ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.admin-page {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
+  padding: 20px 10px;
+  transition: all 0.3s ease;
+}
+
+h1 {
+  text-align: center;
+  color: #6a11cb; /* Brand purple */
+  margin-bottom: 30px;
+}
+
+h2 {
+  color: #333;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn.delete {
+  background-color: #ff4b5c;
+  color: #fff;
+}
+
+.btn.delete:hover {
+  background-color: #e03d50;
+}
+
+.btn.view {
+  background-color: #008CBA;
+  color: #fff;
+}
+
+.btn.view:hover {
+  background-color: #007ba7;
+}
+
+.btn.download {
+  background-color: #6a11cb;
+  color: #fff;
+}
+
+.btn.download:hover {
+  background-color: #5200a1;
+}
+
+/* Button group spacing */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ===== TABLES ===== */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+}
+
+th, td {
+  padding: 12px 14px;
+  text-align: left;
+}
+
+th {
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  color: #fff;
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+tr:hover {
+  background-color: #f0f0ff;
+  transition: 0.2s;
+}
+
+/* ===== MOBILE CARD TABLE ===== */
+@media (max-width: 768px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+    width: 100%;
+  }
+
+  thead tr {
+    display: none; /* hide table headers */
+  }
+
+  tbody tr {
+    margin-bottom: 15px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    padding: 12px;
+  }
+
+  td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 12px;
+    border-bottom: 1px solid #eee;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6a11cb;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+
+  .btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+}
+
+/* ===== CSV DOWNLOAD BUTTON ===== */
+.download-section {
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* admin to user toggle button*/
+.btn.toggle-btn {
+    background: linear-gradient(135deg, #2575fc, #6a11cb);
+    padding: 10px 20px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+}
+.btn.toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.85rem;
+  color: rgba(62, 10, 10, 0.6); /* Halka white/grey */
+  margin-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
