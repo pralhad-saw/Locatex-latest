@@ -1,4 +1,4 @@
-/*
+<!-- /*
 ===========================================================
  Project: LocateX – Smart Lost and Found Solution
  Author: Pralhad Saw
@@ -6,7 +6,7 @@
 
  Unauthorized copying, modification, or distribution is prohibited.
 ===========================================================
-*/
+*/ -->
 
 <!DOCTYPE html>
 <html>
@@ -19,8 +19,8 @@
 
   <style>
     /* Basic styling for claim submission and verification */
-    .claim-section { margin-top: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9; }
-    .claim-section h4 { margin-top: 0; }
+    .claim-section { margin-top: 10px; border: 1px solid #fc2d0e; padding: 10px; border-radius: 5px; background-color: #f9f9f9; }
+    .claim-section h4 { margin-top: 0; color: #fc2d0e; }
     .claim-section form { display: flex; flex-direction: column; gap: 5px; }
     .claim-section input[type="text"], .claim-section textarea { padding: 8px; border: 1px solid #ddd; border-radius: 3px; }
     .claim-section button { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer; }
@@ -29,7 +29,7 @@
     .claim-section .claim-details { font-size: 0.9em; color: #555; }
 
     .verification-section { margin-top: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #eef; }
-    .verification-section h4 { margin-top: 0; }
+    .verification-section h4 { margin-top: 0; color: red;}
     .verification-section form { display: flex; gap: 10px; }
     .verification-section button { padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; }
     .verification-section .accept-btn { background-color: #4CAF50; color: white; }
@@ -197,7 +197,7 @@
 
       <% if (user && item.ownerId && user._id.toString() !== item.ownerId._id.toString()) { %>
         <div class="claim-section">
-          <h4>Claim this Item</h4>
+          <h4>Claim this Item</>
           <form action="/items/<%= item._id %>/claim" method="POST">
             <textarea name="proofDescription" placeholder="Provide proof of ownership..." required></textarea>
             <button type="submit">Submit Claim</button>
@@ -217,8 +217,8 @@
           <h4>Pending Claims</h4>
           <% item.claims.forEach(claim => { %>
             <% if (claim.status === 'pending') { %>
-              <div style="border-bottom: 1px solid #ddd; padding: 5px;">
-                User: <%= claim.requesterId ? claim.requesterId.username : 'Unknown' %><br>
+              <div style="border-bottom: 1px solid #0f0a0a; padding: 5px; color: #000;">
+                User: <%= claim.requesterId ? claim.requesterId.username : "Accept" %><br>
                 Proof: <%= claim.proofDescription %><br>
                 <form action="/items/<%= item._id %>/claims/<%= claim._id %>/verify" method="POST" style="display:inline;">
                   <input type="hidden" name="action" value="accept">
