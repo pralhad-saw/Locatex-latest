@@ -80,6 +80,11 @@ router.post("/add", upload.single("image"), async (req, res) => {
       secretVerificationDetail
     } = req.body;
 
+        // If a non-admin tries to post a 'found' item, block it.
+    if (type === "found" && req.session.user.role !== "admin") {
+      return res.redirect("/dashboard?err=Unauthorized: Only Admin can post found items. Please submit the item to the office.");
+    }
+
     if (!title || !type || !contact || !location || !secretVerificationDetail) {
       return res.status(400).send("Missing fields");
     }

@@ -288,7 +288,10 @@
     
     <select name="type" required>
         <option value="lost">Lost</option>
-        <option value="found">Found</option>
+        <!-- <option value="found">Found</option> -->
+          <% if (user.role === 'admin') { %>
+        <option value="found">Found (Admin Only)</option>
+    <% } %>
     </select>
 
     <input type="text" name="contact" placeholder="Contact Info" required />

@@ -14,6 +14,11 @@ const itemSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
   type: { type: String, enum: ["lost", "found"], required: true },
+  // Inside itemSchema
+submittedBy: { 
+  type: String, // Name or ID of the person who brought it to the office
+  required: false 
+},
   
   // --- Fields that will be HIDDEN by default ---
   contact: { 

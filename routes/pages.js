@@ -80,16 +80,17 @@ router.post("/contact", protect, async (req, res) => {
   const { name, email, message } = req.body;
 
   try {
-    await transporter.sendMail({
-      from: email,
-      to: "techwithpralhad@gmail.com",
-      subject: "New Contact Message From Lost & Found System",
-      html: `
-        <h3>New message from: ${name}</h3>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Message:</b><br>${message}</p>
-      `
-    });
+  await transporter.sendMail({
+  from: `"${name}" <${process.env.EMAIL_USER}>`, // Gmail account
+  replyTo: email, // user email for replies
+  to: process.env.EMAIL_USER, // admin receives
+  subject: "New Contact Message From Lost & Found System",
+  html: `
+    <h3>New message from: ${name}</h3>
+    <p><b>Email:</b> ${email}</p>
+    <p><b>Message:</b><br>${message}</p>
+  `
+})
 
     // res.send("Your message has been sent to admin successfully ✔️");
     res.redirect("/contact?success=Your message has been sent to admin successfully."); 
