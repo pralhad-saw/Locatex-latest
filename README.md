@@ -44,6 +44,7 @@ Users can track the status of their reported items and pending claims in real-ti
 
 ### Image Handling
 - Multer (Secure File Uploads)
+// I have recently got an alternative to multer which can be used to use image anywhere using Cloudinary
 
 ---
 
