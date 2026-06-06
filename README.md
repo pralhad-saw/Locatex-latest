@@ -116,4 +116,4 @@ This project and its source code are proprietary and developed solely by the aut
 
 For permission requests, contact the author.
 
----
+--
