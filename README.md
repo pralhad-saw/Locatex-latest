@@ -35,7 +35,8 @@ Users can track the status of their reported items and pending claims in real-ti
 - Express.js
 
 ### Database
-- MongoDB Atlas (NoSQL)
+- MongoDB Atlas (NoSQL) 
+//You can use MongoDB compass to handle data locally on your system
 
 ### Authentication
 - Bcrypt.js (Password Hashing)
@@ -116,4 +117,4 @@ This project and its source code are proprietary and developed solely by the aut
 
 For permission requests, contact the author.
 
---
+---
